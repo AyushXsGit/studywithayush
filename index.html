@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>School Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- Admin password hash lives here (SHA-256 hex). Will be set after you create a password. -->
+<meta name="admin-hash" content="">
+<style>
+  :root{
+    --bg1:#eef2f3;--bg2:#dfe9f3;--card:#ffffff;--text:#2b2f36;--muted:#6b7280;
+    --primary:#2563eb;--primary-2:#1d4ed8;--secondary:#94a3b8;--secondary-2:#64748b;
+    --ring:rgba(37,99,235,0.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+    color:var(--text);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+  }
+  header{
+    position:sticky;top:0;background:rgba(255,255,255,0.7);backdrop-filter:saturate(180%) blur(10px);
+    border-bottom:1px solid #e5e7eb;
+  }
+  .bar{max-width:1000px;margin:0 auto;padding:14px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+  .brand{font-weight:800;letter-spacing:.3px}
+  .btn{
+    appearance:none;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:600;
+    background:var(--primary);color:white;box-shadow:0 2px 8px rgba(0,0,0,.06);
+    transition:transform .04s ease, background .2s ease;
+  }
+  .btn:hover{background:var(--primary-2)}
+  .btn:active{transform:translateY(1px)}
+  .btn.secondary{background:var(--secondary);color:white}
+  .btn.secondary:hover{background:var(--secondary-2)}
+  .wrap{max-width:1000px;margin:28px auto;padding:0 16px 40px}
+  .card{
+    background:var(--card);border:1px solid #e5e7eb;border-radius:18px;
+    box-shadow:0 6px 30px rgba(0,0,0,.06);padding:20px;margin:0 auto 18px;animation:fade .25s ease;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .grid{display:grid;gap:14px}
+  @media(min-width:720px){.grid.two{grid-template-columns:repeat(2,1fr)}.grid.three{grid-template-columns:repeat(3,1fr)}}
+  .tile{
+    padding:18px;border:1px solid #e5e7eb;border-radius:16px;background:white;cursor:pointer;
+    transition:transform .06s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .tile:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.08);border-color:#d1d5db}
+  .muted{color:var(--muted);font-size:.95rem}
+  .hidden{display:none}
+  h2{margin:0 0 10px}
+  ul{margin:0;padding:0;list-style:none}
+  li.subject{padding:12px 14px;border:1px solid #e5e7eb;border-radius:12px;background:#fafafa;margin:6px 0;
+    display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .subject-name{font-weight:600}
+  .sub-actions{display:flex;gap:8px}
+  .pill{display:inline-block;background:#eef2ff;color:#1e3a8a;border:1px solid #c7d2fe;border-radius:999px;padding:2px 8px;font-size:.75rem}
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+  .dialog{background:white;max-width:680px;width:100%;border-radius:16px;border:1px solid #e5e7eb;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+  .dialog header{position:static;background:white;border-bottom:1px solid #eef2f7}
+  .dialog .body{padding:16px}
+  .row{display:flex;gap:10px}
+  .row.stretch > *{flex:1}
+  input[type="text"],input[type="url"],textarea{
+    width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:12px;font:inherit;resize:vertical;
+    outline:none;box-shadow:0 0 0 0 var(--ring);transition:box-shadow .15s ease,border-color .15s ease
+  }
+  input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--ring)}
+  textarea{min-height:120px}
+  .link-item{display:flex;gap:8px;margin:6px 0}
+  .link-item input{flex:1}
+  .tiny{font-size:.8rem}
+  .footer-note{margin-top:10px;color:#6b7280}
+  .spacer{height:8px}
+</style>
+
+<!-- ====== Embedded content data. You edit through the Admin UI, then use Export HTML. ====== -->
+<script id="portal-data" type="application/json">
+{
+  "classes": [
+    {"id":"class9","name":"Class 9th","subjects":[]},
+    {"id":"class10","name":"Class 10th","subjects":[
+      {"name":"Maths","notes":"","links":[]},
+      {"name":"Hindi A","notes":"","links":[]},
+      {"name":"Hindi B","notes":"","links":[]},
+      {"name":"English","notes":"","links":[]},
+      {"name":"Science","notes":"","links":[]},
+      {"name":"Social Science","notes":"","links":[]},
+      {"name":"English A","notes":"","links":[]},
+      {"name":"English B","notes":"","links":[]},
+      {"name":"I.T.","notes":"","links":[]}
+    ]},
+    {"id":"class11","name":"Class 11th Hum","subjects":[
+      {"name":"Maths","notes":"","links":[]},
+      {"name":"Political Science","notes":"","links":[]},
+      {"name":"Geography","notes":"","links":[]},
+      {"name":"Economic","notes":"","links":[]},
+      {"name":"History","notes":"","links":[]},
+      {"name":"Applied Maths","notes":"","links":[]},
+      {"name":"English","notes":"","links":[]},
+      {"name":"Hindi core","notes":"","links":[]},
+      {"name":"Hindi elective","notes":"","links":[]}
+    ]},
+    {"id":"class12","name":"Class 12th","subjects":[]}
+  ]
+}
+</script>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand">School Portal</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn secondary" id="adminBtn">Admin Login</button>
+      <button class="btn hidden" id="exportBtn">Export HTML</button>
+      <button class="btn hidden" id="changePwBtn" title="Change admin password">Change Password</button>
+      <button class="btn hidden" id="logoutBtn">Exit Admin</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- Home / Class selection -->
+  <div id="view-home" class="card">
+    <h2>Select a Class</h2>
+    <div class="grid two" id="classGrid"></div>
+    <div class="footer-note tiny">View-only for visitors. Admins can login to edit notes and links.</div>
+  </div>
+
+  <!-- Subjects view -->
+  <div id="view-subjects" class="card hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <h2 id="classTitle">Subjects</h2>
+      <button class="btn secondary" id="backBtn">← Back</button>
+    </div>
+    <ul id="subjectList"></ul>
+  </div>
+
+  <!-- Subject details (public) -->
+  <div id="view-details" class="card hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <h2 id="detailTitle">Subject</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn secondary" id="detailsBackBtn">Back</button>
+        <button class="btn hidden" id="editSubjectBtn">Edit</button>
+      </div>
+    </div>
+    <div id="detailNotes" class="muted"></div>
+    <div class="spacer"></div>
+    <div id="detailLinks"></div>
+  </div>
+</div>
+
+<!-- Admin Login / Create Password Modal -->
+<div class="modal hidden" id="authModal">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <header class="bar" style="border-bottom:1px solid #e5e7eb">
+      <div id="authTitle" class="brand">Admin</div>
+    </header>
+    <div class="body">
+      <div id="authCreate" class="">
+        <p class="muted">No admin password is set yet. Create one now.</p>
+        <div class="row stretch">
+          <input type="password" id="newPw1" placeholder="New password (min 4 chars)">
+          <input type="password" id="newPw2" placeholder="Confirm password">
+        </div>
+        <div class="spacer"></div>
+        <button class="btn" id="createPwBtn">Create Password</button>
+        <button class="btn secondary" id="authClose1">Cancel</button>
+      </div>
+
+      <div id="authLogin" class="hidden">
+        <p class="muted">Enter admin password.</p>
+        <input type="password" id="loginPw" placeholder="Password">
+        <div class="spacer"></div>
+        <button class="btn" id="loginBtn">Login</button>
+        <button class="btn secondary" id="authClose2">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Subject Modal -->
+<div class="modal hidden" id="editModal">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <header class="bar" style="border-bottom:1px solid #e5e7eb">
+      <div id="editTitle" class="brand">Edit Subject</div>
+    </header>
+    <div class="body">
+      <div class="row stretch">
+        <textarea id="notesInput" placeholder="Notes for this subject..."></textarea>
+      </div>
+      <div class="spacer"></div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <strong>Links</strong>
+          <button class="btn secondary" id="addLinkBtn" style="padding:6px 10px">+ Add Link</button>
+        </div>
+        <div id="linksContainer"></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn secondary" id="cancelEditBtn">Cancel</button>
+        <button class="btn" id="saveEditBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ------------ Utilities ------------- */
+// SHA-256 hash -> hex string
+async function sha256Hex(text){
+  const enc=new TextEncoder().encode(text);
+  const buf=await crypto.subtle.digest('SHA-256',enc);
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+// read/write admin hash stored in <meta name="admin-hash">
+function getAdminHash(){return (document.querySelector('meta[name="admin-hash"]').content||'').trim();}
+function setAdminHash(hex){document.querySelector('meta[name="admin-hash"]').setAttribute('content',hex);}
+
+/* ------------ Data Model ------------- */
+function loadData(){
+  try{
+    const raw=document.getElementById('portal-data').textContent || '{}';
+    return JSON.parse(raw);
+  }catch(err){console.error(err);return {classes:[]};}
+}
+function saveDataToScriptTag(data){
+  const tag=document.getElementById('portal-data');
+  tag.textContent=JSON.stringify(data,null,2);
+}
+
+// Global state
+let DATA=loadData();
+let isAdmin=false;
+let currentClassId=null;
+let currentSubjectIndex=null;
+
+/* ------------ Render: Home / Classes ------------- */
+const classGrid=document.getElementById('classGrid');
+function renderClasses(){
+  classGrid.innerHTML='';
+  DATA.classes.forEach(cls=>{
+    const div=document.createElement('div');
+    div.className='tile';
+    div.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-weight:700">${cls.name}</div>
+        <div class="muted tiny">${cls.subjects.length? cls.subjects.length+' subjects':'No subjects listed yet'}</div>
+      </div>
+      <div class="pill">Open</div>
+    </div>`;
+    div.onclick=()=>openClass(cls.id);
+    classGrid.appendChild(div);
+  });
+}
+
+/* ------------ Render: Subjects ------------- */
+const viewHome=document.getElementById('view-home');
+const viewSubjects=document.getElementById('view-subjects');
+const viewDetails=document.getElementById('view-details');
+const subjectList=document.getElementById('subjectList');
+const classTitle=document.getElementById('classTitle');
+
+function openClass(classId){
+  currentClassId=classId;
+  const cls=DATA.classes.find(c=>c.id===classId);
+  classTitle.textContent=cls.name+' – Subjects';
+  subjectList.innerHTML='';
+  cls.subjects.forEach((sub, i)=>{
+    const li=document.createElement('li');
+    li.className='subject';
+    li.innerHTML=`<span class="subject-name">${i+1}. ${sub.name}</span>
+      <span class="sub-actions">
+        <button class="btn secondary tinyBtn" data-i="${i}">View</button>
+        ${isAdmin? `<button class="btn tinyBtn" data-edit="${i}">Edit</button>`:''}
+      </span>`;
+    subjectList.appendChild(li);
+  });
+  viewHome.classList.add('hidden');
+  viewDetails.classList.add('hidden');
+  viewSubjects.classList.remove('hidden');
+
+  // actions
+  subjectList.querySelectorAll('[data-i]').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      const i=Number(e.currentTarget.getAttribute('data-i'));
+      openDetails(i);
+    });
+  });
+  subjectList.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      const i=Number(e.currentTarget.getAttribute('data-edit'));
+      openEditor(i);
+    });
+  });
+}
+
+/* ------------ Details View (public) ------------- */
+const detailTitle=document.getElementById('detailTitle');
+const detailNotes=document.getElementById('detailNotes');
+const detailLinks=document.getElementById('detailLinks');
+const editSubjectBtn=document.getElementById('editSubjectBtn');
+
+function openDetails(index){
+  currentSubjectIndex=index;
+  const cls=DATA.classes.find(c=>c.id===currentClassId);
+  const sub=cls.subjects[index];
+
+  detailTitle.textContent=sub.name;
+  detailNotes.textContent=sub.notes ? sub.notes : '(No notes yet)';
+  if(sub.links && sub.links.length){
+    const list=document.createElement('ul');
+    list.style.padding='0'; list.style.margin='10px 0'; list.style.listStyle='none';
+    sub.links.forEach(l=>{
+      const item=document.createElement('li');
+      item.className='subject';
+      item.innerHTML=`<span>${l.title? l.title : l.url}</span>
+                      <a class="pill" href="${l.url}" target="_blank" rel="noopener">Open</a>`;
+      list.appendChild(item);
+    });
+    detailLinks.innerHTML='';
+    detailLinks.appendChild(list);
+  } else {
+    detailLinks.innerHTML='<div class="muted">(No links yet)</div>';
+  }
+
+  editSubjectBtn.classList.toggle('hidden',!isAdmin);
+  editSubjectBtn.onclick=()=>openEditor(index);
+
+  viewSubjects.classList.add('hidden');
+  viewHome.classList.add('hidden');
+  viewDetails.classList.remove('hidden');
+}
+
+/* ------------ Admin: Auth ------------- */
+const adminBtn=document.getElementById('adminBtn');
+const exportBtn=document.getElementById('exportBtn');
+const changePwBtn=document.getElementById('changePwBtn');
+const logoutBtn=document.getElementById('logoutBtn');
+const authModal=document.getElementById('authModal');
+const authCreate=document.getElementById('authCreate');
+const authLogin=document.getElementById('authLogin');
+
+function updateAdminUI(){
+  adminBtn.classList.toggle('hidden',isAdmin);
+  exportBtn.classList.toggle('hidden',!isAdmin);
+  changePwBtn.classList.toggle('hidden',!isAdmin);
+  logoutBtn.classList.toggle('hidden',!isAdmin);
+  // Refresh current class view to show Edit buttons
+  if(currentClassId) openClass(currentClassId);
+}
+
+adminBtn.addEventListener('click',()=>{
+  const hasHash=!!getAdminHash();
+  authModal.classList.remove('hidden');
+  authCreate.classList.toggle('hidden',hasHash);
+  authLogin.classList.toggle('hidden',!hasHash);
+});
+document.getElementById('authClose1').onclick=()=>authModal.classList.add('hidden');
+document.getElementById('authClose2').onclick=()=>authModal.classList.add('hidden');
+
+document.getElementById('createPwBtn').addEventListener('click',async()=>{
+  const p1=(document.getElementById('newPw1').value||'').trim();
+  const p2=(document.getElementById('newPw2').value||'').trim();
+  if(p1.length<4){alert('Password must be at least 4 characters.');return;}
+  if(p1!==p2){alert('Passwords do not match.');return;}
+  const hex=await sha256Hex(p1);
+  setAdminHash(hex);
+  isAdmin=true;
+  authModal.classList.add('hidden');
+  updateAdminUI();
+  alert('Admin password created. Remember to Export HTML so future uploads include this password.');
+});
+
+document.getElementById('loginBtn').addEventListener('click',async()=>{
+  const pw=(document.getElementById('loginPw').value||'').trim();
+  const hex=await sha256Hex(pw);
+  if(hex===getAdminHash()){
+    isAdmin=true;
+    authModal.classList.add('hidden');
+    updateAdminUI();
+  }else{
+    alert('Incorrect password.');
+  }
+});
+
+logoutBtn.addEventListener('click',()=>{isAdmin=false;updateAdminUI();});
+
+/* ------------ Admin: Change Password ------------- */
+changePwBtn.addEventListener('click',async()=>{
+  const old=prompt('Enter current password:');
+  if(old===null) return;
+  const ok=(await sha256Hex(old))===getAdminHash();
+  if(!ok){alert('Current password is incorrect.');return;}
+  const np=prompt('Enter new password (min 4 chars):');
+  if(!np||np.length<4){alert('Too short.');return;}
+  const hex=await sha256Hex(np);
+  setAdminHash(hex);
+  alert('Password changed. Remember to Export HTML to keep the change for your published site.');
+});
+
+/* ------------ Admin: Edit Subject ------------- */
+const editModal=document.getElementById('editModal');
+const notesInput=document.getElementById('notesInput');
+const linksContainer=document.getElementById('linksContainer');
+const addLinkBtn=document.getElementById('addLinkBtn');
+const cancelEditBtn=document.getElementById('cancelEditBtn');
+const saveEditBtn=document.getElementById('saveEditBtn');
+
+function linkRow(link={}, idx){
+  const wrap=document.createElement('div');wrap.className='link-item';
+  wrap.innerHTML=`
+    <input type="text" placeholder="Title (optional)" value="${(link.title||'').replace(/"/g,'&quot;')}">
+    <input type="url" placeholder="https://example.com" value="${(link.url||'').replace(/"/g,'&quot;')}">
+    <button class="btn secondary" style="padding:6px 10px">Remove</button>`;
+  wrap.querySelector('button').onclick=()=>wrap.remove();
+  return wrap;
+}
+
+function openEditor(index){
+  if(!isAdmin){alert('Admin only.');return;}
+  currentSubjectIndex=index;
+  const cls=DATA.classes.find(c=>c.id===currentClassId);
+  const sub=cls.subjects[index];
+  document.getElementById('editTitle').textContent='Edit: '+sub.name;
+  notesInput.value=sub.notes||'';
+  linksContainer.innerHTML='';
+  (sub.links||[]).forEach((l,i)=>linksContainer.appendChild(linkRow(l,i)));
+  editModal.classList.remove('hidden');
+}
+addLinkBtn.onclick=()=>linksContainer.appendChild(linkRow({}, -1));
+cancelEditBtn.onclick=()=>editModal.classList.add('hidden');
+
+saveEditBtn.onclick=()=>{
+  const cls=DATA.classes.find(c=>c.id===currentClassId);
+  const sub=cls.subjects[currentSubjectIndex];
+  sub.notes=notesInput.value.trim();
+  const rows=[...linksContainer.querySelectorAll('.link-item')];
+  sub.links=rows.map(r=>{
+    const [t,u]=r.querySelectorAll('input');
+    return {title:t.value.trim(), url:u.value.trim()};
+  }).filter(x=>x.url); // keep only rows with URL
+  saveDataToScriptTag(DATA);
+  editModal.classList.add('hidden');
+  // If details view is open for this subject, refresh it
+  if(!viewDetails.classList.contains('hidden')) openDetails(currentSubjectIndex);
+  alert('Saved locally. Now click Export HTML to download the updated file for GitHub Pages.');
+};
+
+/* ------------ Export as HTML (download) ------------- */
+function exportHTML(){
+  // Build a full HTML string with current DATA and current admin hash injected
+  const tpl=document.documentElement.cloneNode(true);
+  // inject prettified DATA
+  tpl.querySelector('#portal-data').textContent=JSON.stringify(DATA,null,2);
+  // ensure admin hash is current
+  tpl.querySelector('meta[name="admin-hash"]').setAttribute('content',getAdminHash());
+  // Strip any transient UI state (like hidden modals already toggled) – safe because we cloned
+  const html='<!DOCTYPE html>\n'+tpl.outerHTML;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='index.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+}
+document.getElementById('exportBtn').addEventListener('click',exportHTML);
+
+/* ------------ Navigation buttons ------------- */
+document.getElementById('backBtn').onclick=()=>{
+  viewSubjects.classList.add('hidden'); viewDetails.classList.add('hidden'); viewHome.classList.remove('hidden');
+};
+document.getElementById('detailsBackBtn').onclick=()=>{
+  viewDetails.classList.add('hidden'); viewSubjects.classList.remove('hidden');
+};
+
+/* ------------ Init ------------- */
+(function init(){
+  renderClasses();
+  // If no admin password set, first click on Admin Login will show Create view
+  updateAdminUI();
+})();
+</script>
+</body>
+</html>
